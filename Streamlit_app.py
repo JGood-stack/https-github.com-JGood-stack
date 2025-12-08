@@ -1,10 +1,10 @@
 # ===============================================
-# pfas_tool_v11_ridgeline_fixed (UPDATED)
-# Sidebar changes:
+# pfas_tool_v11_ridgeline_fixed (UPDATED FULL VERSION)
 # - Weighting Scheme → dropdown
 # - Region → dropdown
 # - GAC Disposal → dropdown
-# - All other sidebar items are range sliders
+# - All other sidebar items → range sliders
+# - Updated x-axis labels for Score, GHG, Cost, GEHH
 # ===============================================
 
 import streamlit as st
@@ -53,14 +53,14 @@ st.sidebar.header("Overall Assumptions")
 
 flow_rate = st.sidebar.slider("Flowrate (MGD)", 0.01, 10.0, 1.00, 0.01)
 
-# Score Weighting Scheme → NOW A DROPDOWN
+# Weighting Scheme → dropdown
 if "Weighting_Scheme" in df.columns:
     ws_options = sorted(df["Weighting_Scheme"].dropna().unique().tolist())
     weighting_scheme = st.sidebar.selectbox("Score Weighting Scheme", ["All"] + ws_options)
 else:
     weighting_scheme = "All"
 
-# Region → NOW A DROPDOWN
+# Region → dropdown
 if "Region" in df.columns:
     region_options = sorted(df["Region"].dropna().unique().tolist())
     region_select = st.sidebar.selectbox("Electrical Grid Region", ["All"] + region_options)
@@ -77,7 +77,6 @@ st.sidebar.markdown("### 🌀 Media Treatment (GAC & IX)")
 ### -------- GAC --------
 st.sidebar.markdown("#### GAC assumptions")
 
-# Media Usage — GAC (range slider)
 if "Media_Usage" in df.columns and gac_mask.any():
     gmin = float(df.loc[gac_mask, "Media_Usage"].min())
     gmax = float(df.loc[gac_mask, "Media_Usage"].max())
@@ -85,7 +84,6 @@ if "Media_Usage" in df.columns and gac_mask.any():
 else:
     gac_media_usage = None
 
-# Redundant Filter — GAC (range slider)
 if "Redundant_Filter" in df.columns and gac_mask.any():
     rfmin = int(df.loc[gac_mask, "Redundant_Filter"].min())
     rfmax = int(df.loc[gac_mask, "Redundant_Filter"].max())
@@ -95,7 +93,6 @@ if "Redundant_Filter" in df.columns and gac_mask.any():
 else:
     gac_redundant_filters = None
 
-# Backwash Interval — GAC (range slider)
 if "Backwash_Interval" in df.columns and gac_mask.any():
     bwmin = float(df.loc[gac_mask, "Backwash_Interval"].min())
     bwmax = float(df.loc[gac_mask, "Backwash_Interval"].max())
@@ -105,7 +102,7 @@ if "Backwash_Interval" in df.columns and gac_mask.any():
 else:
     gac_backwash = None
 
-# GAC Disposal → NOW A DROPDOWN
+# GAC Disposal → dropdown
 if "GAC_Disposal" in df.columns:
     dispo_opts = sorted(df["GAC_Disposal"].dropna().unique().tolist())
     gac_disposal_select = st.sidebar.selectbox("GAC Disposal", ["All"] + dispo_opts)
@@ -193,30 +190,21 @@ if "Cleaning_Chemicals" in df.columns and nf_mask.any():
 else:
     nf_cleaning_chems = None
 
-
 # ------------------------------
 # Filtering Logic
 # ------------------------------
 filtered = df.copy()
 
-# Weighting Scheme
 if weighting_scheme != "All":
     filtered = filtered[filtered["Weighting_Scheme"] == weighting_scheme]
 
-# Region
 if region_select != "All":
     filtered = filtered[filtered["Region"] == region_select]
 
-# GAC Disposal
 if gac_disposal_select != "All":
     filtered = filtered[(~gac_mask) | (filtered["GAC_Disposal"] == gac_disposal_select)]
 
-# Range filters
-def apply_range(mask, col, range_vals):
-    lo, hi = range_vals
-    return (mask) & (filtered[col].between(lo, hi))
-
-# Apply GAC filters
+# GAC filters
 if gac_media_usage:
     filtered = filtered[(~gac_mask) | (filtered["Media_Usage"].between(*gac_media_usage))]
 if gac_redundant_filters:
@@ -224,7 +212,7 @@ if gac_redundant_filters:
 if gac_backwash:
     filtered = filtered[(~gac_mask) | (filtered["Backwash_Interval"].between(*gac_backwash))]
 
-# IX
+# IX filters
 if ix_media_usage:
     filtered = filtered[(~ix_mask) | (filtered["Media_Usage"].between(*ix_media_usage))]
 if ix_redundant_filters:
@@ -232,25 +220,24 @@ if ix_redundant_filters:
 if ix_backwash:
     filtered = filtered[(~ix_mask) | (filtered["Backwash_Interval"].between(*ix_backwash))]
 
-# RO
+# RO filters
 if ro_redundant_trains:
     filtered = filtered[(~ro_mask) | (filtered["Redundant_Trains"].between(*ro_redundant_trains))]
 if ro_cleaning_chems:
     filtered = filtered[(~ro_mask) | (filtered["Cleaning_Chemicals"].between(*ro_cleaning_chems))]
 
-# NF
+# NF filters
 if nf_redundant_trains:
     filtered = filtered[(~nf_mask) | (filtered["Redundant_Trains"].between(*nf_redundant_trains))]
 if nf_cleaning_chems:
     filtered = filtered[(~nf_mask) | (filtered["Cleaning_Chemicals"].between(*nf_cleaning_chems))]
 
-
 st.sidebar.write("Filtered Rows:", len(filtered))
 
 # ------------------------------
-# Ridgeline Function
+# Ridgeline Function (updated)
 # ------------------------------
-def ridgeline(df_in, xcol, title):
+def ridgeline(df_in, xcol, title, xaxis_label):
     if df_in.empty:
         return alt.Chart().mark_text(text="No data").properties(height=200)
 
@@ -262,9 +249,12 @@ def ridgeline(df_in, xcol, title):
             xcol, groupby=["Tech"],
             as_=[xcol, "density"], steps=20
         )
-        .mark_area(opacity=0.7, stroke = 'black', strokeWidth=0.5)
+        .mark_area(opacity=0.7, stroke='black', strokeWidth=0.5)
         .encode(
-            x=alt.X(xcol + ":Q"),
+            x=alt.X(
+                xcol + ":Q",
+                axis=alt.Axis(title=xaxis_label)
+            ),
             y=alt.Y("density:Q", axis=None),
             color=alt.Color("Tech:N", legend=None),
         )
@@ -275,32 +265,63 @@ def ridgeline(df_in, xcol, title):
     )
     return chart
 
-
 # ------------------------------
 # Tabs — Ridgeline Visualization
 # ------------------------------
 tab1, tab2, tab3, tab4 = st.tabs([
     "📈 Overall Score",
     "🌍 Global Warming Potential",
-    "💰 Life Cycle Cost",
-    "📊 Global Environment and Human Health"
+    "📊 Global Environment and Human Health",
+    "💰 Life Cycle Cost"
 ])
 
 with tab1:
-    st.subheader("Score Distribution")
-    st.altair_chart(ridgeline(filtered, "Score", "Score by Technology"), use_container_width=True)
+    st.subheader("Overall Score (lower is better)")
+    st.altair_chart(
+        ridgeline(
+            filtered,
+            "Score",
+            "Overall Score by Technology",
+            "Overall Score (lower is better)"
+        ),
+        use_container_width=True
+    )
 
 with tab2:
     st.subheader("GHG Distribution")
-    st.altair_chart(ridgeline(filtered, "GHG", "GHG by Technology"), use_container_width=True)
+    st.altair_chart(
+        ridgeline(
+            filtered,
+            "GHG",
+            "GHG by Technology",
+            "GHG (kgCO2e)"
+        ),
+        use_container_width=True
+    )
 
 with tab3:
-    st.subheader("Affordability Distribution")
-    st.altair_chart(ridgeline(filtered, "Affordability", "Affordability by Technology"), use_container_width=True)
+    st.subheader("Global Environment and Human Health Score (lower is better)")
+    st.altair_chart(
+        ridgeline(
+            filtered,
+            "GEHH",
+            "GEHH Score by Technology",
+            "Score: Global Environment and Human Health (lower is better)"
+        ),
+        use_container_width=True
+    )
 
 with tab4:
-    st.subheader("GEHH Distribution")
-    st.altair_chart(ridgeline(filtered, "GEHH", "GEHH by Technology"), use_container_width=True)
+    st.subheader("Life Cycle Cost Score (lower is better)")
+    st.altair_chart(
+        ridgeline(
+            filtered,
+            "Affordability",
+            "Life Cycle Cost Score by Technology",
+            "Life Cycle Cost Score (lower is better)"
+        ),
+        use_container_width=True
+    )   
 
 st.divider()
 st.caption("PFAS Ridgeline Tool — University of Maine (2025)")
