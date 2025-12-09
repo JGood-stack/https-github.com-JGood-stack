@@ -105,7 +105,7 @@ st.sidebar.markdown("#### GAC assumptions")
 if "Media_Usage" in df.columns and gac_mask.any():
     gmin = float(df.loc[gac_mask, "Media_Usage"].min())
     gmax = float(df.loc[gac_mask, "Media_Usage"].max())
-    gac_media_usage = st.sidebar.slider("Media Usage — GAC", gmin, gmax, (gmin, gmax))
+    gac_media_usage = st.sidebar.slider("Media Usage (lb/1000gal)— GAC", gmin, gmax, (gmin, gmax))
 else:
     gac_media_usage = None
 
@@ -140,7 +140,7 @@ st.sidebar.markdown("#### IX assumptions")
 if "Media_Usage" in df.columns and ix_mask.any():
     ix_min = float(df.loc[ix_mask, "Media_Usage"].min())
     ix_max = float(df.loc[ix_mask, "Media_Usage"].max())
-    ix_media_usage = st.sidebar.slider("Media Usage — IX", ix_min, ix_max, (ix_min, ix_max))
+    ix_media_usage = st.sidebar.slider("Media Usage (lb/1000gal) — IX", ix_min, ix_max, (ix_min, ix_max))
 else:
     ix_media_usage = None
 
