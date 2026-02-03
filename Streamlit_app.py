@@ -61,7 +61,7 @@ if not uploaded:
 df = pd.read_csv(uploaded)
 df.columns = df.columns.str.strip().str.replace(" ", "_")
 
-required = ["Tech", "Score", "GHG", "Affordability", "GEHH"]
+required = ["Tech", "Score", "GHG", "Affordability", "GEHH", "Lifecycle Cost (Capital + O&M)"]
 missing = [c for c in required if c not in df.columns]
 if missing:
     st.error(f"Missing required columns: {', '.join(missing)}")
