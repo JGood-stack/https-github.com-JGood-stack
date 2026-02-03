@@ -271,11 +271,12 @@ def ridgeline(df_in, xcol, title, xaxis_label):
 # ------------------------------
 # TABS — Ridgeline Charts
 # ------------------------------
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📈 Overall Score",
     "🌍 Global Warming Potential",
     "📊 Global Environment & Human Health",
-    "💰 Life Cycle Cost"
+    "💰 Affordability"
+    "💰 Lifecycle Cost (Capital + O&M)"
 ])
 
 with tab1:
@@ -288,11 +289,11 @@ with tab1:
     )
 
 with tab2:
-    st.subheader("GHG (kgCO2e)")
+    st.subheader("GHG (kgCO2e) (lower is better)")
     st.altair_chart(
         ridgeline(filtered, "GHG",
                   "GHG by Technology",
-                  "GHG (kgCO2e)"),
+                  "GHG (kgCO2e) (lower is better)"),
         use_container_width=True
     )
 
@@ -306,11 +307,20 @@ with tab3:
     )
 
 with tab4:
-    st.subheader("Life Cycle Cost Score (lower is better)")
+    st.subheader("Affordability ($$) (lower is better)")
     st.altair_chart(
         ridgeline(filtered, "Affordability",
-                  "Life Cycle Cost Score by Technology",
-                  "Life Cycle Cost Score (lower is better)"),
+                  "Affordability Score by Technology",
+                  "Affordability ($$) (lower is better)"),
+        use_container_width=True
+    )
+
+with tab5:
+    st.subheader("Lifecycle Cost (Capital + O&M) ($$) (lower is better)")
+    st.altair_chart(
+        ridgeline(filtered, "Lifecycle Cost (Capital + O&M)",
+                  "Lifecycle Cost Score by Technology",
+                  "Lifecycle Cost ($$) (lower is better)"),
         use_container_width=True
     )
 
