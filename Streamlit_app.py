@@ -46,7 +46,7 @@ alt.themes.enable('large_theme')
 st.title("💧 PFAS Treatment Technologies — Ridgeline Visualization Tool")
 st.markdown(
     "Upload your dataset and adjust the assumptions. "
-    "Ridgeline plots show Score, GHG, Affordability, and GEHH for each technology."
+    "Ridgeline plots show Score, GHG, Affordability, GEHH and Lifecycle Cost (Capital + O&M) for each technology."
 )
 st.divider()
 
