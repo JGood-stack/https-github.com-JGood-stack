@@ -274,8 +274,8 @@ def ridgeline(df_in, xcol, title, xaxis_label):
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📈 Overall Score",
     "🌍 Global Warming Potential",
+    "💰 Affordability",
     "📊 Global Environment & Human Health",
-    "💰 Affordability"
     "💰 Lifecycle Cost (Capital + O&M)"
 ])
 
@@ -298,20 +298,20 @@ with tab2:
     )
 
 with tab3:
-    st.subheader("Global Environment & Human Health (lower is better)")
-    st.altair_chart(
-        ridgeline(filtered, "GEHH",
-                  "GEHH Score by Technology",
-                  "Score: Global Environment and Human Health (lower is better)"),
-        use_container_width=True
-    )
-
-with tab4:
     st.subheader("Affordability ($$) (lower is better)")
     st.altair_chart(
         ridgeline(filtered, "Affordability",
                   "Affordability Score by Technology",
                   "Affordability ($$) (lower is better)"),
+        use_container_width=True
+    )
+
+with tab4:
+    st.subheader("Global Environment & Human Health (lower is better)")
+    st.altair_chart(
+        ridgeline(filtered, "GEHH",
+                  "GEHH Score by Technology",
+                  "Score: Global Environment and Human Health (lower is better)"),
         use_container_width=True
     )
 
